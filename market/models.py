@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Q, Max
 from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
@@ -82,6 +82,24 @@ class SubscriptionManager(ProductContainerManager):
             Q(first_lesson_date__lte=edge_date) | Q(first_lesson_date__isnull=True, buy_date__lte=edge_date)
         )
 
+    def subscriptions_not_used_for_a_week(self):
+        """
+        Find active subscriptions
+        We find subscriptions for which there were classes more than a week ago and there are no planned ones,
+        as well as those purchased a week ago for which there were no classes
+        Then we find subscriptions for which there were no notifications in the last week, so as not to be repeated
+        """
+        due_ids = [subscript.id for subscript in self.due()]
+        exclude_due_ids = self.get_queryset().filter(is_fully_used=False).exclude(pk__in=due_ids)
+        week_ago = timezone.now() - timedelta(weeks=1)
+        return exclude_due_ids.annotate(
+            date_last_class=Max(
+                "classes__timeline__start",
+                filter=Q(classes__is_scheduled=True, classes__timeline__isnull=False)
+            )).filter(Q(date_last_class__lte=week_ago) | Q(date_last_class__isnull=True, buy_date__lte=week_ago)).filter(
+            Q(last_reminder_date__lte=week_ago) | Q(last_reminder_date__isnull=True)
+        )
+
 
 class Subscription(ProductContainer):
     """
@@ -104,8 +122,15 @@ class Subscription(ProductContainer):
 
     first_lesson_date = models.DateTimeField('Date of the first lesson', editable=False, null=True)
 
+    last_reminder_date = models.DateTimeField('Date of the last reminder', editable=False, null=True)
+
     def __str__(self):
         return self.name_for_user
+
+    def set_last_reminder_date(self):
+        self.last_reminder_date = timezone.now()
+        self.save()
+        print('------------', self.last_reminder_date)
 
     @property
     def name_for_user(self):

@@ -5,9 +5,24 @@ from mailer.owl import Owl
 
 class_starting_teacher = Signal(providing_args=['instance'])  # class is about to start (for teachers)
 class_starting_student = Signal(providing_args=['instance'])  # class is about to start (for students)
+subscription_money_is_running_out = Signal(providing_args=['instance'])
 #
 # i have made two different signals, because they obviously will require different
 # options, like time, left to the lesson
+
+
+@receiver(subscription_money_is_running_out, dispatch_uid='student_subscription_reminder')
+def notify_student_class_scheduled(sender, **kwargs):
+    c = kwargs['instance']
+    owl = Owl(
+        template='mail/class/student/subscription_reminder.html',
+        ctx={
+            'c': c,
+        },
+        to=[c.customer.user.email],
+        timezone=c.customer.timezone,
+    )
+    owl.send()
 
 
 @receiver(class_starting_student, dispatch_uid='notify_class_starting_student')

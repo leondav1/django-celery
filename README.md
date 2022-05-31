@@ -25,8 +25,7 @@ For always-actual bootstrap process please consider CI configuration.
 Running a development host:
 
 ```sh
-gulp&
-./manage.py runserver
+gulp & ./manage.py runserver
 ```
 
 Production version is built via CircleCI — [![CircleCI](https://circleci.com/gh/f213/elk-dashboard.svg?style=svg&circle-token=2ce041d53271e60d7afa4efc393f981684951089)](https://circleci.com/gh/f213/elk-dashboard).

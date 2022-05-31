@@ -23,6 +23,9 @@
     "run-sequence": "^1.2.2",
     "stylus": "^0.54.5"
   },
+    "overrides": {
+    "graceful-fs": "^4.2.9"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"No tests yet, sorry\" && exit 0"

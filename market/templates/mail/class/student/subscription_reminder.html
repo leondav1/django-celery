@@ -1,0 +1,12 @@
+{% extends "mail_templated/base.tpl" %}
+{% load humanize %}
+
+{% block subject %}
+{{ c.customer.first_name | capfirst }}
+{% endblock %}
+
+{% block body %}
+Dear {{ c.customer.first_name | capfirst }}, we remind you that you have an unused subscription. We look forward to seeing you in the coming days.
+
+{% include 'mailer/_signature.html' %}
+{% endblock %}

@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from elk.celery import app as celery
-from market.models import Class
-from timeline.signals import class_starting_student, class_starting_teacher
+from market.models import Class, Subscription
+from timeline.signals import class_starting_student, class_starting_teacher, subscription_money_is_running_out
 
 
 @celery.task
@@ -20,3 +20,11 @@ def notify_15min_to_class():
         i.pre_start_notifications_sent_to_student = True
         i.save()
         class_starting_student.send(sender=notify_15min_to_class, instance=i)
+
+
+@celery.task
+def student_subscription_reminder():
+    for item in Subscription.objects.subscriptions_not_used_for_a_week():
+        if item:
+            subscription_money_is_running_out.send(sender=student_subscription_reminder, instance=item)
+            item.set_last_reminder_date()

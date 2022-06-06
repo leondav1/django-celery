@@ -130,7 +130,6 @@ class Subscription(ProductContainer):
     def set_last_reminder_date(self):
         self.last_reminder_date = timezone.now()
         self.save()
-        print('------------', self.last_reminder_date)
 
     @property
     def name_for_user(self):

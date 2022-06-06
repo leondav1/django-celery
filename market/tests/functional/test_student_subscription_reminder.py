@@ -34,7 +34,7 @@ class TestSubscriptionNotice(TestCase):
             student_subscription_reminder()
             self.assertEqual(len(mail.outbox), 1)
 
-    def tes_do_not_repeat_send_reminder(self):
+    def test_do_not_repeat_send_reminder(self):
         with freeze_time('2022-06-7 12:00'):
             for _ in range(5):
                 student_subscription_reminder()
